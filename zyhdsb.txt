@@ -1,0 +1,107 @@
+package produce;
+
+import java.util.*;
+public class ThreadTest {
+public static int count = 0;
+public static final int th = 3;
+
+public static void main(String[] args) {
+Stack stack = new Stack();
+Goods goods = new Goods();
+Producer p = new Producer(stack,goods);
+Consumer c = new Consumer(stack,goods);
+Thread tp = new Thread(p);
+tp.start();
+Thread tc = new Thread(c);
+tc.start();
+}
+public static class Goods {
+public ArrayList<String> goods = new ArrayList<String>();
+public Goods()
+{
+goods.add("abc");
+goods.add("23d");
+goods.add("1a");
+}
+}
+public static class Producer implements Runnable{
+public Stack stack = null;
+public Goods goods ;
+public Producer(Stack stack,Goods goods)
+{
+this.stack = stack;
+this.goods = goods;
+}
+public void run()
+{
+for(int i = 0; i<th ; i++)
+{
+String s = goods.goods.get(count++);
+//    ?         ?  
+stack.push(s);
+try {  
+                Thread.sleep(100);//?    ? ¦² ?  100      
+            } catch (InterruptedException e) {  
+                // TODO Auto-generated catch block  
+                e.printStackTrace();  
+            }
+}
+}
+}
+public static class Consumer implements Runnable{
+public Stack stack = null;
+public Goods goods;
+public Consumer(Stack stack,Goods goods)
+{
+this.stack = stack;
+this.goods = goods;
+}
+public void run()
+{
+for(int i =0 ; i<th; i++)
+{
+String s = stack.pop();
+try{
+Thread.sleep(100);    
+} catch (InterruptedException e) {  
+                e.printStackTrace();  
+            }
+}
+}
+}
+    public static class Stack{
+public int index = 0;
+public String[] steam = new String[3];
+public Stack(){}
+public synchronized void push(String s)
+{
+while(index==s.length()){ 	       
+            try {  
+                this.wait();	    
+            } catch (InterruptedException e) {  
+                e.printStackTrace();  
+            }  
+        }  
+        this.notify();   
+        System.out.println("      "+s);
+        steam[index] = s;  
+        this.index++;  
+}
+public synchronized String pop(){  
+        while(index==0){                         	//    ?   ?    
+            try {  
+                this.wait();  
+            } catch (InterruptedException e) {  
+                e.printStackTrace();  
+            }  
+        }  
+        this.notify();  
+        this.index--;	 
+        String s = steam[index];
+        StringBuffer sb = new StringBuffer(s);
+String temp = sb.reverse().toString();
+System.out.println("      "+s+",	        "+temp);
+        return steam[index];  
+    }  
+}
+}
